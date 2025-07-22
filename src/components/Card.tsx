@@ -6,6 +6,31 @@ import { Menu, MenuItem, IconButton } from "@mui/material";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
+const categoryColors: Record<string, "blue" | "purple" | "pink" | "green" | "orange" | "red"> = {
+  Action: "blue",
+  Adventure: "purple",
+  Comedy: "red",
+  Detective: "pink",
+  Drama: "green",
+  Fantasy: "orange",
+  Game: "red",
+  Gourmet: "blue",
+  Hentai: "purple",
+  Historical: "pink",
+  Horror: "green",
+  Isekai: "orange",
+  Magic: "red",
+  Medical: "blue",
+  Music: "purple",
+  Psychological: "pink",
+  Racing: "green",
+  Reincarnation: "orange",
+  Romance: "red",
+  "Sci-Fi": "blue",
+  "Slice of Life": "purple",
+  Sports: "pink",
+};
+
 interface PostCardProps {
   id: number; // ✅ เพิ่ม id
   imageUrl: string;
@@ -113,9 +138,19 @@ const Card: React.FC<PostCardProps> = ({
 
         {/* ✅ แสดง category เป็น badge เดียว และใช้ tags.map */}
         <div className="mt-4 flex flex-wrap items-center">
-          <NeonBadge className="mr-2 mt-1 rounded-2xl py-1.5 px-4 text-xs">
-            #{category}
-          </NeonBadge>
+          {category.split(",").map((cat) => {
+            const trimmedCat = cat.trim();
+            const color = categoryColors[trimmedCat] || "blue"; // fallback เผื่อไม่ match
+            return (
+              <NeonBadge
+                key={trimmedCat}
+                color={color}
+                className="mr-2 mt-1 rounded-2xl py-1.5 px-4 text-xs"
+              >
+                {trimmedCat}
+              </NeonBadge>
+            );
+          })}
         </div>
       </div>
     </article>

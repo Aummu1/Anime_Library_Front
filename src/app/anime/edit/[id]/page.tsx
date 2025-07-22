@@ -2,22 +2,34 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
+import Autocomplete from "@mui/material/Autocomplete";
+import Checkbox from "@mui/material/Checkbox";
+import TextField from "@mui/material/TextField";
+import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
+import CheckBoxIcon from "@mui/icons-material/CheckBox";
+
+interface FormDataType {
+  animeName: string;
+  description: string;
+  category: string[];
+  status: string;
+  image: File | null;
+}
+
+interface OptionType {
+  label: string;
+  value: string;
+}
 
 export default function EditAnimePage() {
   const router = useRouter();
   const { id } = useParams();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState<{
-    animeName: string;
-    description: string;
-    category: string;
-    status: string;
-    image: File | null;
-  }>({
+  const [formData, setFormData] = useState<FormDataType>({
     animeName: "",
     description: "",
-    category: "",
+    category: [],
     status: "",
     image: null,
   });
@@ -34,12 +46,11 @@ export default function EditAnimePage() {
         setFormData({
           animeName: data.animeName,
           description: data.description,
-          category: data.category,
+          category: data.category ? data.category.split(",") : [],
           status: data.status,
           image: null,
         });
 
-        // ถ้ามีรูปเก่าให้ preview
         if (data.imageBase64) {
           setImagePreview(`data:image/png;base64,${data.imageBase64}`);
         }
@@ -52,12 +63,12 @@ export default function EditAnimePage() {
   }, [id]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value, files } = e.target as HTMLInputElement;
     if (name === "image" && files && files[0]) {
       setFormData({ ...formData, image: files[0] });
-      setImagePreview(URL.createObjectURL(files[0])); // preview ไฟล์ใหม่
+      setImagePreview(URL.createObjectURL(files[0]));
     } else {
       setFormData({ ...formData, [name]: value });
     }
@@ -69,22 +80,14 @@ export default function EditAnimePage() {
     const data = new FormData();
     data.append("AnimeName", formData.animeName);
     data.append("Description", formData.description);
-    data.append("Category", formData.category);
+    data.append("Category", formData.category.join(","));
     data.append("Status", formData.status);
-
     if (formData.image) {
       data.append("Image", formData.image);
     }
 
     try {
-      await axios.put(`http://localhost:5145/api/Anime/${id}`, data, {
-        // headers: {
-        //   "Content-Type": "multipart/form-data",
-        // },
-      });
-      for (let pair of data.entries()) {
-        console.log(pair[0], pair[1]);
-      }
+      await axios.put(`http://localhost:5145/api/Anime/${id}`, data);
       alert("✅ Anime updated successfully!");
       router.push("/");
     } catch (err) {
@@ -92,6 +95,37 @@ export default function EditAnimePage() {
       alert("Error updating anime.");
     }
   };
+
+  const categoryOptions: OptionType[] = [
+    { label: "Action", value: "Action" },
+    { label: "Adventure", value: "Adventure" },
+    { label: "Comedy", value: "Comedy" },
+    { label: "Detective", value: "Detective" },
+    { label: "Drama", value: "Drama" },
+    { label: "Fantasy", value: "Fantasy" },
+    { label: "Game", value: "Game" },
+    { label: "Gourmet", value: "Gourmet" },
+    { label: "Hentai", value: "Hentai" },
+    { label: "Historical", value: "Historical" },
+    { label: "Horror", value: "Horror" },
+    { label: "Isekai", value: "Isekai" },
+    { label: "Magic", value: "Magic" },
+    { label: "Medical", value: "Medical" },
+    { label: "Music", value: "Music" },
+    { label: "Psychological", value: "Psychological" },
+    { label: "Racing", value: "Racing" },
+    { label: "Reincarnation", value: "Reincarnation" },
+    { label: "Romance", value: "Romance" },
+    { label: "Sci-Fi", value: "Sci-Fi" },
+    { label: "Slice of Life", value: "Slice of Life" },
+    { label: "Sports", value: "Sports" },
+  ];
+
+  const watchStatusOptions: OptionType[] = [
+    { label: "Watching", value: "Watching" },
+    { label: "Watched", value: "Watched" },
+    { label: "Planned", value: "Planned" },
+  ];
 
   return (
     <div className="min-h-screen bg-[#141414] text-white font-['Plus Jakarta Sans','Noto Sans',sans-serif]">
@@ -125,44 +159,115 @@ export default function EditAnimePage() {
               ></textarea>
             </div>
 
+            {/* --- ✅ CategoryMultiSelect inline --- */}
             <div>
               <label className="block text-base font-medium mb-2">Category</label>
-              <select
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                className="w-full h-14 rounded-xl border border-[#474747] bg-[#212121] p-4 text-white focus:outline-none"
-                required
-              >
-                <option value="">Select a category</option>
-                <option value="action">Action</option>
-                <option value="drama">Drama</option>
-                <option value="comedy">Comedy</option>
-              </select>
+              <Autocomplete
+                multiple
+                disableCloseOnSelect
+                options={categoryOptions}
+                value={categoryOptions.filter((option) =>
+                  formData.category.includes(option.value)
+                )}
+                onChange={(_e, newValue) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    category: newValue.map((opt) => opt.value),
+                  }))
+                }
+                getOptionLabel={(option) => option.label}
+                isOptionEqualToValue={(option, value) => option.value === value.value}
+                renderOption={(props, option, { selected }) => {
+                  const { key, ...rest } = props; // แยก key ออกมา
+                  return (
+                    <li key={key} {...rest}>
+                      <Checkbox
+                        icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
+                        checkedIcon={<CheckBoxIcon fontSize="small" />}
+                        checked={selected}
+                        style={{ marginRight: 8 }}
+                      />
+                      {option.label}
+                    </li>
+                  );
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    placeholder="Select categories"
+                    sx={{
+                      "& .MuiInputBase-root": {
+                        backgroundColor: "#212121",
+                        color: "#fff",
+                      },
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#fff",
+                      },
+                      "& .MuiSvgIcon-root": {
+                        color: "#fff",
+                      },
+                      "& .MuiInputLabel-root": {
+                        color: "#fff",
+                      },
+                      "& .MuiAutocomplete-tag": {
+                        color: "#fff",
+                      },
+                    }}
+                  />
+                )}
+              />
             </div>
 
+            {/* --- ✅ WatchStatusSelect inline --- */}
             <div>
               <label className="block text-base font-medium mb-2">Watch Status</label>
-              <select
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                className="w-full h-14 rounded-xl border border-[#474747] bg-[#212121] p-4 text-white focus:outline-none"
-                required
-              >
-                <option value="">Select watch status</option>
-                <option value="watching">Watching</option>
-                <option value="watched">Watched</option>
-                <option value="planned">Planned</option>
-              </select>
+              <Autocomplete
+                disablePortal
+                options={watchStatusOptions}
+                value={
+                  watchStatusOptions.find((opt) => opt.value === formData.status) || null
+                }
+                onChange={(_event, newValue) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    status: newValue ? newValue.value : "",
+                  }));
+                }}
+                getOptionLabel={(option) => option.label}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    placeholder="Select watch status"
+                    sx={{
+                      "& .MuiInputBase-root": {
+                        backgroundColor: "#212121",
+                        color: "#fff",
+                      },
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#000",
+                      },
+                      "& .MuiSvgIcon-root": {
+                        color: "#fff",
+                      },
+                      "& .MuiInputLabel-root": {
+                        color: "#fff",
+                      },
+                    }}
+                  />
+                )}
+              />
             </div>
 
+            {/* --- ✅ Image Upload Preview --- */}
             <div className="flex flex-col items-center gap-4 border-2 border-dashed border-[#474747] py-14 rounded-xl">
               <p className="text-lg font-bold">Anime Image</p>
               {imagePreview && (
-                <img src={imagePreview} alt="preview" className="w-40 h-40 object-cover rounded-lg" />
+                <img
+                  src={imagePreview}
+                  alt="preview"
+                  className="w-40 h-40 object-cover rounded-lg"
+                />
               )}
-
               <input
                 type="file"
                 name="image"
@@ -177,9 +282,6 @@ export default function EditAnimePage() {
               >
                 Browse Files
               </label>
-              {/* {formData.image && (
-                <p className="text-sm text-green-400">{formData.image.name}</p>
-              )} */}
             </div>
 
             <div className="flex justify-end">
