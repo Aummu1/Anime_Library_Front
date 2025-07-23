@@ -4,6 +4,7 @@ import Search from "@/components/Search";
 import NeonBadge from "@/components/Menu";
 import Card from "@/components/Card";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 interface AnimePost {
   id: number;
@@ -17,6 +18,7 @@ interface AnimePost {
 const categoryColors: Record<string, "blue" | "purple" | "pink" | "green" | "orange" | "red"> = {
   Action: "blue",
   Adventure: "purple",
+  Comedy: "red",
   Detective: "pink",
   Drama: "green",
   Fantasy: "orange",
@@ -43,6 +45,7 @@ const statusOrder = ["Watching", "Planned", "Watched"];
 export default function MyLibrary() {
   const [posts, setPosts] = useState<AnimePost[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -113,6 +116,7 @@ export default function MyLibrary() {
                   onDelete={(deletedId) =>
                     setPosts((prev) => prev.filter((p) => p.id !== deletedId))
                   }
+                  onClick={() => router.push(`/anime/animeinfo/${post.id}`)}
                 />
               ))}
             </div>

@@ -39,6 +39,7 @@ interface PostCardProps {
   description: string;
   tags: string[];
   onDelete?: (deletedId: number) => void; // ✅ เพิ่มตรงนี้
+  onClick?: () => void;
 }
 
 const Card: React.FC<PostCardProps> = ({
@@ -49,6 +50,7 @@ const Card: React.FC<PostCardProps> = ({
   description,
   tags,
   onDelete,
+  onClick,
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -89,7 +91,7 @@ const Card: React.FC<PostCardProps> = ({
   };
 
   return (
-    <article className="w-full max-w-[360px] h-[420px] col-span-1 m-auto cursor-pointer overflow-hidden rounded-lg shadow-lg transition-transform duration-200 hover:translate-y-2 bg-black">
+    <article onClick={onClick} className="w-full max-w-[360px] h-[420px] col-span-1 m-auto cursor-pointer overflow-hidden rounded-lg shadow-lg transition-transform duration-200 hover:translate-y-2 bg-black">
 
       {/* รูปภาพ สูง 50% */}
       <div className="relative h-[50%] overflow-hidden">
