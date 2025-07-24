@@ -87,10 +87,19 @@ export default function EditAnimePage() {
     }
 
     try {
-      await axios.put(`http://localhost:5145/api/Anime/${id}`, data);
+      // ส่งคำขอ PUT ไปยัง API
+      await axios.put(`http://localhost:5145/api/Anime/${id}`, data, {
+        headers: {
+          "Content-Type": "multipart/form-data; charset=utf-8"  // ใช้ : แทน ;
+        }
+      });
+      // แสดงข้อความเมื่อส่งข้อมูลสำเร็จ
+      console.log("Form data before submit:", formData);
       alert("✅ Anime updated successfully!");
+      // รีไดเรกไปที่หน้าอื่น
       router.push("/");
     } catch (err) {
+      // ถ้ามีข้อผิดพลาดในการส่งคำขอ
       console.error("❌ Error:", err);
       alert("Error updating anime.");
     }
@@ -278,7 +287,7 @@ export default function EditAnimePage() {
               />
               <label
                 htmlFor="imageInput"
-                className="h-10 px-4 rounded-xl bg-[#303030] text-sm font-bold cursor-pointer"
+                className="h-10 px-4 rounded-xl bg-[#303030] text-sm font-bold cursor-pointer flex items-center"
               >
                 Browse Files
               </label>

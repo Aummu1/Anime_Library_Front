@@ -65,25 +65,28 @@ const Card: React.FC<PostCardProps> = ({
     setAnchorEl(null);
   };
 
-  const handleEdit = () => {
+  const handleEdit = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation(); // ป้องกันการกระจายของ event
     handleClose();
     router.push(`/anime/edit/${id}`);
     console.log("Edit clicked");
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation(); // ป้องกันการกระจายเหตุการณ์ที่ทำให้เกิดการคลิกที่อื่น
     handleClose();
 
     const confirmed = confirm("Are you sure you want to delete this anime?");
-    if (!confirmed) return;
+    if (!confirmed) {
+      router.push("/"); // ไปหน้า "/" เมื่อกด Cancel
+      return;
+    }
 
     try {
       await axios.delete(`http://localhost:5145/api/Anime/${id}`);
       alert("✅ Deleted successfully!");
+      router.push(`/`); // หลังจากลบเสร็จไปหน้าแรก
 
-      if (onDelete) {
-        onDelete(id); // ✅ แจ้งกลับไปยัง MyLibrary
-      }
     } catch (err) {
       console.error("❌ Error deleting anime:", err);
       alert("Error deleting anime.");
@@ -91,7 +94,7 @@ const Card: React.FC<PostCardProps> = ({
   };
 
   return (
-    <article onClick={onClick} className="w-full max-w-[360px] h-[420px] col-span-1 m-auto cursor-pointer overflow-hidden rounded-lg shadow-lg transition-transform duration-200 hover:translate-y-2 bg-black">
+    <article onClick={onClick} className="w-full max-w-[360px] h-[500px] col-span-1 m-auto cursor-pointer overflow-hidden rounded-lg shadow-lg bg-black">
 
       {/* รูปภาพ สูง 50% */}
       <div className="relative h-[50%] overflow-hidden">
@@ -135,7 +138,7 @@ const Card: React.FC<PostCardProps> = ({
           {/* ✅ แก้ตรงนี้: แสดง tag แรก (ถ้ามี) */}
           <p className="text-sm font-medium text-red-500">{tags[0]}</p>
           <AuroraText className="line-clamp-2">{title}</AuroraText>
-          <p className="text-sm font-medium text-white">{description}</p>
+          <p className="text-sm font-medium text-white line-clamp-2">{description}</p>
         </div>
 
         {/* ✅ แสดง category เป็น badge เดียว และใช้ tags.map */}

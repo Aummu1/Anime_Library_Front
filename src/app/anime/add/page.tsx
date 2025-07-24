@@ -206,6 +206,23 @@ export default function AddAnimePage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // ตรวจสอบข้อมูลที่ขาดหายไป
+    const missingFields: string[] = [];
+
+    if (!formData.animeName) missingFields.push("Anime Title");
+    if (!formData.description) missingFields.push("Description");
+    if (formData.category.length === 0) missingFields.push("Category");
+    if (!formData.status) missingFields.push("Watch Status");
+    if (!formData.image) missingFields.push("Image");
+
+    // ถ้ามีข้อมูลขาดหายไป
+    if (missingFields.length > 0) {
+      alert(`Please fill in the following fields: ${missingFields.join(", ")}`);
+      return;
+    }
+
+    // ส่งข้อมูลไปยัง API
     const data = new FormData();
     data.append("AnimeName", formData.animeName);
     data.append("Description", formData.description);
