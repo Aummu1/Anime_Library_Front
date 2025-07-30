@@ -1,5 +1,7 @@
 'use client'
 import React, { useState } from 'react';
+import axios from 'axios';
+import { useRouter } from 'next/navigation';
 
 const UserIcon: React.FC = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -65,6 +67,7 @@ const Signup: React.FC = () => {
   const [fullName, setFullName] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [step, setStep] = useState<number>(1);
+  const router = useRouter();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -76,16 +79,30 @@ const Signup: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setTimeout(() => {
+
+    try {
+      const response = await axios.post('http://localhost:5145/api/User/register', {
+        username: fullName,
+        email: email,
+        password: password,
+      });
+
+      console.log('User registered:', response.data);
+      alert('Registration successful!');
+      router.push('/signin');
+    } catch (error: any) {
+      console.error('Registration failed:', error);
+      alert(error.response?.data?.message || 'Registration failed. Please try again.');
+    } finally {
       setIsLoading(false);
-    }, 2000);
+    }
   };
 
   return (
-    <div className="flex items-center justify-center p-4">
+    <div className="flex items-center justify-center p-4 h-full w-full">
       <div className="w-full max-w-md">
         {/* Progress Bar */}
         <div className="mb-6">

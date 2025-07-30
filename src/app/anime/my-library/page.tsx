@@ -50,7 +50,13 @@ export default function MyLibrary() {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const res = await axios.get("http://localhost:5145/api/Anime");
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        if (!user?.userId) {
+          console.error("No logged in user");
+          return;
+        }
+
+        const res = await axios.get(`http://localhost:5145/api/Anime/user/${user.userId}`);
         setPosts(res.data);
       } catch (err) {
         console.error("Error fetching anime:", err);

@@ -8,7 +8,6 @@ import TextField from "@mui/material/TextField";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 
-// --- ✅ TYPE
 interface FormDataType {
   animeName: string;
   description: string;
@@ -22,7 +21,7 @@ interface OptionType {
   value: string;
 }
 
-// --- ✅ CategoryMultiSelect
+// ✅ Category Multi Select Component
 const CategoryMultiSelect = ({
   formData,
   setFormData,
@@ -79,9 +78,9 @@ const CategoryMultiSelect = ({
         getOptionLabel={(option) => option.label}
         isOptionEqualToValue={(option, value) => option.value === value.value}
         renderOption={(props, option, { selected }) => {
-          const { key, ...restProps } = props;
+          const { key, ...rest } = props;
           return (
-            <li key={key} {...restProps}>
+            <li key={key} {...rest}>
               <Checkbox
                 icon={icon}
                 checkedIcon={checkedIcon}
@@ -122,7 +121,7 @@ const CategoryMultiSelect = ({
   );
 };
 
-// --- ✅ WatchStatusSelect
+// ✅ Watch Status Select Component
 const WatchStatusSelect = ({
   formData,
   setFormData,
@@ -179,7 +178,7 @@ const WatchStatusSelect = ({
   );
 };
 
-// --- ✅ AddAnimePage
+// ✅ Main AddAnimePage
 export default function AddAnimePage() {
   const [formData, setFormData] = useState<FormDataType>({
     animeName: "",
@@ -189,8 +188,8 @@ export default function AddAnimePage() {
     image: null,
   });
 
-  const router = useRouter();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -207,27 +206,31 @@ export default function AddAnimePage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // ตรวจสอบข้อมูลที่ขาดหายไป
     const missingFields: string[] = [];
-
     if (!formData.animeName) missingFields.push("Anime Title");
     if (!formData.description) missingFields.push("Description");
     if (formData.category.length === 0) missingFields.push("Category");
     if (!formData.status) missingFields.push("Watch Status");
     if (!formData.image) missingFields.push("Image");
 
-    // ถ้ามีข้อมูลขาดหายไป
     if (missingFields.length > 0) {
-      alert(`Please fill in the following fields: ${missingFields.join(", ")}`);
+      alert(`Please fill in: ${missingFields.join(", ")}`);
       return;
     }
 
-    // ส่งข้อมูลไปยัง API
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const userId = user?.userId;
+    if (!userId) {
+      alert("You must be logged in to add anime.");
+      return;
+    }
+
     const data = new FormData();
     data.append("AnimeName", formData.animeName);
     data.append("Description", formData.description);
     data.append("Category", formData.category.join(","));
     data.append("Status", formData.status);
+    data.append("UserId", userId); // ✅ ส่ง userId ไปด้วย
     if (formData.image) {
       data.append("Image", formData.image);
     }
@@ -251,6 +254,7 @@ export default function AddAnimePage() {
           <h1 className="text-[32px] font-bold mb-6">Add New Anime</h1>
 
           <form className="space-y-6" onSubmit={handleSubmit}>
+            {/* Anime Title */}
             <div>
               <label className="block text-base font-medium mb-2">Anime Title</label>
               <input
@@ -260,10 +264,10 @@ export default function AddAnimePage() {
                 onChange={handleChange}
                 placeholder="Enter the anime title"
                 className="w-full h-14 rounded-xl border border-[#474747] bg-[#212121] p-4 text-white placeholder:text-[#ababab] focus:outline-none"
-                required
               />
             </div>
 
+            {/* Description */}
             <div>
               <label className="block text-base font-medium mb-2">Description</label>
               <textarea
@@ -272,13 +276,14 @@ export default function AddAnimePage() {
                 onChange={handleChange}
                 placeholder="Provide a brief description of the anime"
                 className="w-full min-h-[140px] rounded-xl border border-[#474747] bg-[#212121] p-4 text-white placeholder:text-[#ababab] focus:outline-none"
-                required
-              ></textarea>
+              />
             </div>
 
+            {/* Category & Status */}
             <CategoryMultiSelect formData={formData} setFormData={setFormData} />
             <WatchStatusSelect formData={formData} setFormData={setFormData} />
 
+            {/* Image Upload */}
             <div className="flex flex-col items-center gap-4 border-2 border-dashed border-[#474747] py-14 rounded-xl">
               <p className="text-lg font-bold">Upload Anime Image</p>
               <p className="text-sm">Drag and drop or click to upload</p>
@@ -294,7 +299,6 @@ export default function AddAnimePage() {
                 onChange={handleChange}
                 className="hidden"
                 id="imageInput"
-                required
               />
               <label
                 htmlFor="imageInput"
@@ -307,6 +311,7 @@ export default function AddAnimePage() {
               )}
             </div>
 
+            {/* Submit */}
             <div className="flex justify-end">
               <button
                 type="submit"

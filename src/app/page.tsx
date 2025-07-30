@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import MyLibrary from "@/app/anime/my-library/page";
 import Fab from "@mui/material/Fab";
 import AddIcon from "@mui/icons-material/Add";
@@ -12,8 +12,17 @@ export default function Home() {
     router.push("/anime/add");
   };
 
+  // ✅ ดักเช็ค token
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      // 🔒 redirect ถ้าไม่มี token
+      router.push("/signin");
+    }
+  }, [router]);
+
   return (
-    <div className="font-sans relative min-h-screen p-8 pb-20">
+    <div className="">
       <MyLibrary />
 
       {/* ✅ ปุ่ม + ลอยอยู่ขวาล่าง */}
