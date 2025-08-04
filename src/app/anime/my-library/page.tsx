@@ -47,22 +47,22 @@ export default function MyLibrary() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const user = JSON.parse(localStorage.getItem("user") || "{}");
-        if (!user?.userId) {
-          console.error("No logged in user");
-          return;
-        }
-
-        const res = await axios.get(`http://localhost:5145/api/Anime/user/${user.userId}`);
-        setPosts(res.data);
-      } catch (err) {
-        console.error("Error fetching anime:", err);
+  const fetchPosts = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      if (!user?.userId) {
+        console.error("No logged in user");
+        return;
       }
-    };
 
+      const res = await axios.get(`http://localhost:5145/api/Anime/user/${user.userId}`);
+      setPosts(res.data);
+    } catch (err) {
+      console.error("Error fetching anime:", err);
+    }
+  };
+
+  useEffect(() => {
     fetchPosts();
   }, []);
 

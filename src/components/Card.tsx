@@ -85,6 +85,7 @@ const Card: React.FC<PostCardProps> = ({
     try {
       await axios.delete(`http://localhost:5145/api/Anime/${id}`);
       alert("✅ Deleted successfully!");
+      if (onDelete) onDelete(id);
       router.push(`/`); // หลังจากลบเสร็จไปหน้าแรก
 
     } catch (err) {
