@@ -64,9 +64,11 @@ const Signup: React.FC = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-  const [fullName, setFullName] = useState<string>('');
+  const [username, setusername] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [step, setStep] = useState<number>(1);
+  const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
+
   const router = useRouter();
 
   const togglePasswordVisibility = () => {
@@ -85,7 +87,7 @@ const Signup: React.FC = () => {
 
     try {
       const response = await axios.post('http://localhost:5145/api/User/register', {
-        username: fullName,
+        username: username,
         email: email,
         password: password,
       });
@@ -95,9 +97,12 @@ const Signup: React.FC = () => {
       router.push('/signin');
     } catch (error: any) {
       console.error('Registration failed:', error);
-      alert(error.response?.data?.message || 'Registration failed. Please try again.');
-    } finally {
-      setIsLoading(false);
+      if (error.response?.data?.errors) {
+        // ✅ กรณีที่เป็น field validation error
+        setFieldErrors(error.response.data.errors);
+      } else {
+        alert(error.response?.data?.message || 'Registration failed. Please try again.');
+      }
     }
   };
 
@@ -141,28 +146,31 @@ const Signup: React.FC = () => {
               <div className="signin-step space-y-4">
                 <div className="space-y-2">
                   <label htmlFor="fullName" className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                    Full Name
+                    Username
                   </label>
                   <div className="relative">
                     <input
-                      id="fullName"
+                      id="username"
                       type="text"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      placeholder="Enter your full name"
+                      value={username}
+                      onChange={(e) => setusername(e.target.value)}
+                      placeholder="Enter your Username"
                       className="signin-input w-full px-3 py-2 bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-md text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all duration-200"
                     />
-                    {fullName && (
+                    {username && (
                       <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500">
                         <CheckIcon />
                       </div>
                     )}
                   </div>
+                  {fieldErrors.username && (
+                    <p className="mt-1 text-sm text-red-500">{fieldErrors.username}</p>
+                  )}
                 </div>
                 <button
                   type="button"
                   onClick={handleNext}
-                  disabled={!fullName}
+                  disabled={!username}
                   className="signin-button w-full bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 py-2 px-4 rounded-md text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-black transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   Next Step
@@ -191,6 +199,9 @@ const Signup: React.FC = () => {
                       className="signin-input w-full pl-9 pr-3 py-2 bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-md text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-100 focus:border-transparent transition-all duration-200"
                     />
                   </div>
+                  {fieldErrors.email && (
+                    <p className="mt-1 text-sm text-red-500">{fieldErrors.email}</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -242,7 +253,7 @@ const Signup: React.FC = () => {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between items-center py-1">
                       <span className="text-gray-600 dark:text-gray-400">Name:</span>
-                      <span className="text-gray-900 dark:text-gray-100 font-medium">{fullName}</span>
+                      <span className="text-gray-900 dark:text-gray-100 font-medium">{username}</span>
                     </div>
                     <div className="flex justify-between items-center py-1">
                       <span className="text-gray-600 dark:text-gray-400">Email:</span>
