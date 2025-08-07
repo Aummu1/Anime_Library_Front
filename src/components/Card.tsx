@@ -38,10 +38,11 @@ interface PostCardProps {
   title: string;
   description: string;
   tags: string[];
+  favorite: boolean;
   onDelete?: (deletedId: number) => void; // ✅ เพิ่มตรงนี้
+  onUnlike?: (id: number) => void;
   onClick?: () => void;
 }
-
 const Card: React.FC<PostCardProps> = ({
   id,
   imageUrl,
@@ -49,12 +50,15 @@ const Card: React.FC<PostCardProps> = ({
   title,
   description,
   tags,
+  favorite,
   onDelete,
+  onUnlike,
   onClick,
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const router = useRouter();
+  const [liked, setLiked] = useState(favorite);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation(); // ป้องกันลิงก์คลิก
@@ -63,6 +67,21 @@ const Card: React.FC<PostCardProps> = ({
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const toggleLike = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const res = await axios.patch(`http://localhost:5145/api/Anime/${id}/favorite`);
+      const isLiked = res.data.favorite;
+      setLiked(isLiked);
+
+      if (!isLiked && onUnlike) {
+        onUnlike(id); // 🔥 บอกหน้าแม่ให้ลบการ์ดนี้
+      }
+    } catch (err) {
+      console.error("Error toggling favorite", err);
+    }
   };
 
   const handleEdit = (event: React.MouseEvent<HTMLElement>) => {
@@ -94,6 +113,16 @@ const Card: React.FC<PostCardProps> = ({
     }
   };
 
+  // const handleLikeToggle = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   e.stopPropagation();
+  //   try {
+  //     const res = await axios.patch(`http://localhost:5145/api/Anime/favorite/${userid}`);
+  //     setLiked(res.data.favorite);
+  //   } catch (err) {
+  //     console.error("Error toggling favorite", err);
+  //   }
+  // };
+
   return (
     <article onClick={onClick} className="w-full max-w-[360px] h-[500px] col-span-1 m-auto cursor-pointer overflow-hidden rounded-lg shadow-lg bg-black">
 
@@ -115,8 +144,40 @@ const Card: React.FC<PostCardProps> = ({
           </div>
         )}
 
+        <div className="absolute top-2 right-2 w-[30px] h-[30px]" title="Like">
+          <div
+            onClick={toggleLike}
+            className="w-full h-full flex justify-center items-center relative cursor-pointer"
+          >
+            {/* หัวใจ */}
+            <svg
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+              className={`absolute w-6 h-6 stroke-pink-500 transition-all duration-300 ease-in-out ${liked ? "fill-pink-500 animate-pulse-pop" : "fill-white"
+                }`}
+            >
+              <path d="M17.5,1.917a6.4,6.4,0,0,0-5.5,3.3a6.4,6.4,0,0,0-5.5-3.3A6.8,6.8,0,0,0,0,8.967c0,4.547,4.786,9.513,8.8,12.88a4.974,4.974,0,0,0,6.4,0C19.214,18.48,24,13.514,24,8.967A6.8,6.8,0,0,0,17.5,1.917Z" />
+            </svg>
+
+            {/* Celebrate particles */}
+            {liked && (
+              <svg
+                className="absolute animate-celebrate w-[100px] h-[100px] stroke-pink-500 fill-pink-500 pointer-events-none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <polygon points="10,10 20,20" />
+                <polygon points="10,50 20,50" />
+                <polygon points="20,80 30,70" />
+                <polygon points="90,10 80,20" />
+                <polygon points="90,50 80,50" />
+                <polygon points="80,80 70,70" />
+              </svg>
+            )}
+          </div>
+        </div>
+
         {/* จุดสามจุดมุมขวาล่าง */}
-        <div className="absolute bottom-2 right-2 z-10">
+        <div className="absolute bottom-2 right-2 z-10 bg-gray-600 rounded-4xl opacity-75">
           <IconButton onClick={handleMenuClick} size="small" className="bg-black/60">
             <MoreVertIcon className="text-white" fontSize="small" />
           </IconButton>

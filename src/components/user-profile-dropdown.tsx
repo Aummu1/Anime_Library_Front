@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 
+
 // Icons
 const User = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -95,8 +96,14 @@ const DropdownMenuSeparator = () => (
 );
 
 export default function UserProfileDropdown() {
-    const [user, setUser] = useState<{ username: string; email: string } | null>(null);
     const router = useRouter();
+
+    const [user, setUser] = useState<{
+        username: string;
+        email: string;
+        userId: number;
+        imageBase64?: string | null;
+    } | null>(null);
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -105,18 +112,16 @@ export default function UserProfileDropdown() {
             setUser({
                 username: parsed.username,
                 email: parsed.email,
+                userId: parsed.userId,
+                imageBase64: parsed.imageBase64 || null,
             });
         }
     }, []);
 
     // fallback initials
     const initials = user?.username
-        ? user.username
-            .split(' ')
-            .map((s) => s[0])
-            .join('')
-            .toUpperCase()
-        : '??';
+        ? user.username.split(' ')[0]?.charAt(0).toUpperCase()
+        : 'U';
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -131,8 +136,18 @@ export default function UserProfileDropdown() {
             <DropdownMenu
                 trigger={
                     <button className="flex items-center space-x-3 p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                            {initials}
+                        <div className="w-8 h-8 rounded-full overflow-hidden">
+                            {user?.imageBase64 ? (
+                                <img
+                                    src={user.imageBase64}
+                                    alt="Profile"
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
+                                    {initials}
+                                </div>
+                            )}
                         </div>
                         <div className="text-left">
                             <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
@@ -148,8 +163,18 @@ export default function UserProfileDropdown() {
                 {/* Header */}
                 <div className="px-3 py-3 border-b border-zinc-200 dark:border-zinc-700">
                     <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
-                            {initials}
+                        <div className="w-10 h-10 rounded-full overflow-hidden">
+                            {user?.imageBase64 ? (
+                                <img
+                                    src={user.imageBase64}
+                                    alt="Profile"
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                                    {initials}
+                                </div>
+                            )}
                         </div>
                         <div>
                             <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
@@ -165,11 +190,11 @@ export default function UserProfileDropdown() {
 
                 {/* Menu */}
                 <div className="py-1">
-                    <DropdownMenuItem onClick={() => console.log('Profile')}>
+                    <DropdownMenuItem onClick={() => router.push(`/anime/profile/${user?.userId}`)}>
                         <User className="mr-3 h-4 w-4 text-zinc-500" />
                         Your Profile
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => console.log('Settings')}>
+                    <DropdownMenuItem onClick={() => router.push(`/anime/settingpage/${user?.userId}`)}>
                         <Settings className="mr-3 h-4 w-4 text-zinc-500" />
                         Settings
                     </DropdownMenuItem>

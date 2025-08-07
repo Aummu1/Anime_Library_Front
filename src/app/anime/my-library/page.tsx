@@ -13,6 +13,7 @@ interface AnimePost {
   category: string;
   status: string;
   imageBase64: string;
+  favorite: boolean;
 }
 
 const categoryColors: Record<string, "blue" | "purple" | "pink" | "green" | "orange" | "red"> = {
@@ -119,6 +120,7 @@ export default function MyLibrary() {
                   title={post.animeName}
                   description={post.description}
                   tags={[post.status]}
+                  favorite={post.favorite}
                   onDelete={(deletedId) =>
                     setPosts((prev) => prev.filter((p) => p.id !== deletedId))
                   }
